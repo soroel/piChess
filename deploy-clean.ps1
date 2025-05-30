@@ -19,10 +19,10 @@ Copy-Item -Force validation-key.txt build/
 Copy-Item -Force CNAME build/
 
 # Remove existing files from root
-Remove-Item -Force index.html, manifest.json, robots.txt, favicon.ico, logo192.png, logo512.png, static, validation-key.txt, CNAME -ErrorAction SilentlyContinue
+Remove-Item -Force -Recurse -ErrorAction SilentlyContinue index.html, manifest.json, robots.txt, favicon.ico, logo192.png, logo512.png, static, validation-key.txt, CNAME
 
 # Copy build files to root
-cp -r build/* .
+Copy-Item -Force -Recurse build/* .
 
 # Add and commit changes
 git add .
