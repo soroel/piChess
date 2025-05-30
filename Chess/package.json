@@ -22,13 +22,13 @@
   "scripts": {
     "start": "react-scripts start",
     "startNode17": "react-scripts --openssl-legacy-provider start",
-    "build": "GENERATE_SOURCEMAP=false react-scripts build",
+    "build": "set GENERATE_SOURCEMAP=false && react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "predeploy": "npm run build",
     "deploy": "gh-pages -d build"
   },
-  "homepage": "https://soroel.github.io/piChess/"
+  "homepage": "https://sorophine.tech",
   "eslintConfig": {
     "extends": [
       "react-app",
