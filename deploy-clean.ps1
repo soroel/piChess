@@ -13,7 +13,8 @@ Copy-Item -Force robots.txt build/
 Copy-Item -Force favicon.ico build/
 Copy-Item -Force logo192.png build/
 Copy-Item -Force logo512.png build/
-Copy-Item -Force static -Recurse -Force build/
+# Copy static directory
+Copy-Item -Force static -Recurse build/
 Copy-Item -Force validation-key.txt build/
 Copy-Item -Force CNAME build/
 
