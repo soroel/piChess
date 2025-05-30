@@ -1,0 +1,184 @@
+.chess-board {
+  display: grid;
+  width: 640px;
+  height: 640px;
+  border: none;
+  position: relative;
+  background: transparent;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.board-row {
+  display: flex;
+  position: relative;
+}
+
+.square {
+  width: 75px;
+  height: 75px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 48px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.square:hover {
+  opacity: 0.95;
+}
+
+.square.white {
+  background-color: #f8fafc;
+}
+
+.square.black {
+  background-color: #cbd5e0;
+}
+
+.piece {
+  cursor: pointer;
+  user-select: none;
+  transition: transform 0.2s ease;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  will-change: transform;
+}
+
+.square.white .piece {
+  color: #2d3748;
+}
+
+.square.black .piece {
+  color: #2d3748;
+}
+
+.square:hover .piece {
+  transform: scale(1.05);
+}
+
+.square.selected {
+  background-color: #ebf8ff;
+}
+
+.square.selected.white {
+  background-color: #ebf8ff;
+}
+
+.square.selected.black {
+  background-color: #bee3f8;
+}
+
+.square.valid-move {
+  position: relative;
+}
+
+.square.valid-move::before {
+  content: '';
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  background-color: rgba(66, 153, 225, 0.3);
+  border-radius: 50%;
+  pointer-events: none;
+  transition: all 0.2s ease;
+}
+
+.square.valid-move:hover::before {
+  transform: scale(1.1);
+  background-color: rgba(66, 153, 225, 0.4);
+}
+
+/* Coordinate labels */
+.board-row:last-child .square::after {
+  content: attr(data-file);
+  position: absolute;
+  bottom: -20px;
+  font-size: 12px;
+  color: #718096;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+
+.board-row .square:first-child::before {
+  content: attr(data-rank);
+  position: absolute;
+  left: -20px;
+  font-size: 12px;
+  color: #718096;
+  font-weight: 500;
+}
+
+/* Last move highlight */
+.square.last-move {
+  position: relative;
+}
+
+.square.last-move::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(66, 153, 225, 0.1);
+  pointer-events: none;
+}
+
+/* Check highlight */
+.square.check {
+  background-color: rgba(245, 101, 101, 0.2) !important;
+}
+
+.square.check.white {
+  background-color: rgba(245, 101, 101, 0.15) !important;
+}
+
+.square.check.black {
+  background-color: rgba(245, 101, 101, 0.25) !important;
+}
+
+/* Promotion dialog container */
+.promotion-dialog-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1000;
+  pointer-events: none;
+  backdrop-filter: blur(2px);
+}
+
+.promotion-dialog {
+  pointer-events: auto;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: white;
+  padding: 1rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  display: flex;
+  gap: 0.5rem;
+}
+
+.promotion-piece {
+  width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 40px;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.promotion-piece:hover {
+  background: #f7fafc;
+  transform: scale(1.05);
+} 
