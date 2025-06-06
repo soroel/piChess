@@ -2,7 +2,7 @@
   "name": "app-platform-demo-frontend",
   "version": "0.1.0",
   "private": true,
-  "homepage": "https://sorophine.tech",
+  "homepage": "https://www.sorophine.tech",
   "dependencies": {
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^13.4.0",
@@ -33,7 +33,7 @@
     "deploy": "gh-pages -d build",
     "start": "cross-env PORT=3314 react-scripts start",
     "startNode17": "cross-env PORT=3314 HOST=127.0.0.1 BROWSER=none react-scripts --openssl-legacy-provider start",
-    "build": "set PUBLIC_URL=. && set GENERATE_SOURCEMAP=false && react-scripts build",
+    "build": "set GENERATE_SOURCEMAP=false && react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
