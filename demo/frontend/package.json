@@ -2,6 +2,7 @@
   "name": "app-platform-demo-frontend",
   "version": "0.1.0",
   "private": true,
+  "homepage": "https://soroel.github.io/piChess",
   "dependencies": {
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^13.4.0",
@@ -24,9 +25,12 @@
   },
   "devDependencies": {
     "@types/uuid": "^10.0.0",
-    "cross-env": "^7.0.3"
+    "cross-env": "^7.0.3",
+    "gh-pages": "^6.3.0"
   },
   "scripts": {
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build",
     "start": "cross-env PORT=3314 react-scripts start",
     "startNode17": "cross-env PORT=3314 HOST=127.0.0.1 BROWSER=none react-scripts --openssl-legacy-provider start",
     "build": "GENERATE_SOURCEMAP=false react-scripts build",
