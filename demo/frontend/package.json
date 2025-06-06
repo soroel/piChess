@@ -33,7 +33,7 @@
     "deploy": "gh-pages -d build",
     "start": "cross-env PORT=3314 react-scripts start",
     "startNode17": "cross-env PORT=3314 HOST=127.0.0.1 BROWSER=none react-scripts --openssl-legacy-provider start",
-    "build": "GENERATE_SOURCEMAP=false react-scripts build",
+    "build": "set GENERATE_SOURCEMAP=false && react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
