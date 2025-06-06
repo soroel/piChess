@@ -1,13 +1,13 @@
 {
   "files": {
-    "main.css": "/piChess/static/css/main.158df9ea.css",
-    "main.js": "/piChess/static/js/main.d6ec42d9.js",
-    "index.html": "/piChess/index.html",
-    "main.158df9ea.css.map": "/piChess/static/css/main.158df9ea.css.map",
-    "main.d6ec42d9.js.map": "/piChess/static/js/main.d6ec42d9.js.map"
+    "main.css": ". /static/css/main.158df9ea.css",
+    "main.js": ". /static/js/main.0a8988e7.js",
+    "index.html": ". /index.html",
+    "main.158df9ea.css.map": ". /static/css/main.158df9ea.css.map",
+    "main.0a8988e7.js.map": ". /static/js/main.0a8988e7.js.map"
   },
   "entrypoints": [
     "static/css/main.158df9ea.css",
-    "static/js/main.d6ec42d9.js"
+    "static/js/main.0a8988e7.js"
   ]
 }
