@@ -1,16 +1,13 @@
 {
   "files": {
-    "main.css": "/static/css/main.f3802442.chunk.css",
-    "main.js": "/static/js/main.0000a8d4.chunk.js",
-    "runtime-main.js": "/static/js/runtime-main.fb4c9543.js",
-    "static/js/2.5df7a981.chunk.js": "/static/js/2.5df7a981.chunk.js",
-    "index.html": "/index.html",
-    "static/js/2.5df7a981.chunk.js.LICENSE.txt": "/static/js/2.5df7a981.chunk.js.LICENSE.txt"
+    "main.css": "/piChess/static/css/main.158df9ea.css",
+    "main.js": "/piChess/static/js/main.d6ec42d9.js",
+    "index.html": "/piChess/index.html",
+    "main.158df9ea.css.map": "/piChess/static/css/main.158df9ea.css.map",
+    "main.d6ec42d9.js.map": "/piChess/static/js/main.d6ec42d9.js.map"
   },
   "entrypoints": [
-    "static/js/runtime-main.fb4c9543.js",
-    "static/js/2.5df7a981.chunk.js",
-    "static/css/main.f3802442.chunk.css",
-    "static/js/main.0000a8d4.chunk.js"
+    "static/css/main.158df9ea.css",
+    "static/js/main.d6ec42d9.js"
   ]
 }
