@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import ChessBoard from './ChessBoard';
 import MoveHistory from './MoveHistory';
 import GameModeSelector, { GameMode } from './GameModeSelector';
@@ -42,47 +42,6 @@ const Chess: React.FC<ChessProps> = ({ username }) => {
     black: []
   });
 
-  useEffect(() => {
-    if (gameMode === 'computer' && currentPlayer === 'black') {
-      // Add a small delay to make the computer's move feel more natural
-      const timeoutId = setTimeout(() => {
-        const lastState = boardHistory[boardHistory.length - 1];
-        const computerMove = computerPlayer.getBestMove(lastState ? lastState.board : initializeBoard());
-        
-        if (computerMove) {
-          const from = getSquareNotation(computerMove.from.row, computerMove.from.col);
-          const to = getSquareNotation(computerMove.to.row, computerMove.to.col);
-          const piece = lastState?.board[computerMove.from.row][computerMove.from.col].piece;
-          
-          if (piece) {
-            handleMove({
-              piece: getPieceSymbol(piece.type, piece.color),
-              from,
-              to
-            }, makeMove(lastState ? lastState.board : initializeBoard(), computerMove));
-          }
-        }
-      }, 500);
-
-      return () => clearTimeout(timeoutId);
-    }
-  }, [currentPlayer, gameMode, boardHistory]);
-
-  const initializeBoard = (): Square[][] => {
-    const board: Square[][] = [];
-    for (let i = 0; i < 8; i++) {
-      const row: Square[] = [];
-      for (let j = 0; j < 8; j++) {
-        row.push({
-          piece: getInitialPiece(i, j),
-          color: (i + j) % 2 === 0 ? 'white' : 'black'
-        });
-      }
-      board.push(row);
-    }
-    return board;
-  };
-
   const getInitialPiece = (row: number, col: number): Piece | null => {
     if (row <= 1) {
       const color: PieceColor = 'black';
@@ -98,18 +57,6 @@ const Chess: React.FC<ChessProps> = ({ username }) => {
     return null;
   };
 
-  const getPieceSymbol = (type: Piece['type'], color: PieceColor): string => {
-    const symbols = {
-      king: { white: '♔', black: '♚' },
-      queen: { white: '♕', black: '♛' },
-      rook: { white: '♖', black: '♜' },
-      bishop: { white: '♗', black: '♝' },
-      knight: { white: '♘', black: '♞' },
-      pawn: { white: '♙', black: '♟' }
-    };
-    return symbols[type][color];
-  };
-
   const getSquareNotation = (row: number, col: number): string => {
     const files = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
     return `${files[col]}${8 - row}`;
@@ -122,9 +69,9 @@ const Chess: React.FC<ChessProps> = ({ username }) => {
     return newBoard;
   };
 
-  const handleMove = (move: Move, boardState: Square[][]) => {
-    setMoveHistory([...moveHistory, move]);
-    setCurrentPlayer(currentPlayer === 'white' ? 'black' : 'white');
+  const handleMove = useCallback((move: Move, boardState: Square[][]) => {
+    setMoveHistory(prevMoves => [...prevMoves, move]);
+    setCurrentPlayer(prevPlayer => prevPlayer === 'white' ? 'black' : 'white');
     
     const newStatus = move.checkmate ? 'checkmate' : (move.check ? 'check' : 'active');
     setGameStatus(newStatus);
@@ -133,7 +80,6 @@ const Chess: React.FC<ChessProps> = ({ username }) => {
     if (move.capture) {
       const lastState = boardHistory[boardHistory.length - 1];
       if (lastState) {
-        const fromCoords = parseSquareNotation(move.from);
         const toCoords = parseSquareNotation(move.to);
         const capturedPiece = lastState.board[toCoords.row][toCoords.col].piece;
         if (capturedPiece) {
@@ -146,14 +92,52 @@ const Chess: React.FC<ChessProps> = ({ username }) => {
       }
     }
 
-    setBoardHistory([...boardHistory, {
+    setBoardHistory(prevHistory => [...prevHistory, {
       board: boardState,
       currentPlayer,
-      gameStatus,
+      gameStatus: newStatus,
       move
     }]);
     setCanUndo(true);
-  };
+  }, [boardHistory, currentPlayer]);
+
+  // This effect handles the computer's move in computer mode
+  useEffect(() => {
+    const initializeBoard = (): Square[][] => {
+      const board: Square[][] = [];
+      for (let i = 0; i < 8; i++) {
+        const row: Square[] = [];
+        for (let j = 0; j < 8; j++) {
+          row.push({
+            piece: getInitialPiece(i, j),
+            color: (i + j) % 2 === 0 ? 'white' : 'black'
+          });
+        }
+        board.push(row);
+      }
+      return board;
+    };
+
+    if (gameMode === 'computer' && currentPlayer === 'black') {
+      const timeoutId = setTimeout(() => {
+        const lastState = boardHistory[boardHistory.length - 1];
+        if (lastState) {
+          const computerMove = computerPlayer.getBestMove(lastState.board);
+          if (computerMove) {
+            const from = getSquareNotation(computerMove.from.row, computerMove.from.col);
+            const to = getSquareNotation(computerMove.to.row, computerMove.to.col);
+            handleMove({
+              piece: lastState.board[computerMove.from.row][computerMove.from.col].piece?.type || '',
+              from,
+              to
+            }, makeMove(lastState ? lastState.board : initializeBoard(), computerMove));
+          }
+        }
+      }, 500);
+
+      return () => clearTimeout(timeoutId);
+    }
+  }, [currentPlayer, gameMode, boardHistory, computerPlayer, handleMove]);
 
   const parseSquareNotation = (notation: string): { row: number; col: number } => {
     const file = notation.charAt(0).toLowerCase();
