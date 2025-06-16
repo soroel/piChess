@@ -1,31 +1,21 @@
-
 import React, { useEffect, useState } from 'react';
 import Chess from './Chess/Chess';
 
-// Define Pi SDK types
-interface PiNetwork {
-  init: { sandbox: boolean };
-  authenticate: (
-    scopes: string[], 
-    callbacks?: {
-      onIncompletePaymentFound?: (payment: any) => void;
-    }
-  ) => Promise<{
-    user: { 
-      username: string;
-    };
-    accessToken: string;
-  }>;
-}
+// Import the PiNetwork interface from typedefs
+import { PiNetwork } from './typedefs';
 
-// Extend the Window interface to include Pi
-interface Window {
-  Pi?: PiNetwork;
+// Extend Window interface to include Pi SDK
+declare global {
+  interface Window {
+    Pi?: PiNetwork;
+  }
 }
 
 const PiWrapper: React.FC = () => {
   const [username, setUsername] = useState<string>('');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   const onIncompletePayment = (payment: any) => {
     console.log('Incomplete payment found:', payment);
@@ -33,47 +23,73 @@ const PiWrapper: React.FC = () => {
   };
 
   useEffect(() => {
+    // Initialize Pi SDK
+    if (window.Pi) {
+      window.Pi.init({ version: '2.0', sandbox: true }); // Set sandbox to false for production
+    }
+
     const authenticate = async () => {
+      setIsLoading(true);
+      setError(null);
+      
       try {
-        if (window.Pi) {
-          const result = await window.Pi.authenticate(['username'], onIncompletePayment);
-          setUsername(result.user.username);
-          setIsAuthenticated(true);
+        if (!window.Pi) {
+          throw new Error('Pi Network SDK not loaded. Please make sure you are accessing this app through the Pi Browser.');
         }
-      } catch (error) {
-        console.error('Authentication error:', error);
+
+        const result = await window.Pi.authenticate(['username', 'payments'], { 
+          onIncompletePaymentFound: onIncompletePayment 
+        });
+        
+        setUsername(result.user.username);
+        setIsAuthenticated(true);
+      } catch (err: any) {
+        console.error('Authentication failed:', err);
+        setError(err.message || 'Failed to authenticate with Pi Network');
       } finally {
-        // Loading complete
+        setIsLoading(false);
       }
     };
 
-    authenticate();
+    // Add a small delay to ensure Pi SDK is fully loaded
+    const timer = setTimeout(() => {
+      authenticate();
+    }, 1000);
+
+    return () => clearTimeout(timer);
   }, []);
 
-  if (!isAuthenticated) {
+  if (isLoading) {
+    return <div>Connecting to Pi Network...</div>;
+  }
+
+  if (error) {
     return (
-      <div style={{
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        height: '100vh',
-        backgroundColor: '#f5f7fa'
-      }}>
-        <div style={{
-          padding: '20px',
-          borderRadius: '10px',
-          backgroundColor: 'white',
-          boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
-          textAlign: 'center'
-        }}>
-          <h2>Connecting to Pi Network...</h2>
-          <p>Please wait while we authenticate your Pi account.</p>
-        </div>
+      <div>
+        <h2>Error</h2>
+        <p>{error}</p>
+        <p>Please make sure you are:</p>
+        <ul>
+          <li>Using the Pi Browser</li>
+          <li>Your app is properly configured in the Pi Developer Portal</li>
+          <li>You have a stable internet connection</li>
+        </ul>
       </div>
     );
   }
 
-  return <Chess username={username} />;
+  return (
+    <div>
+      {isAuthenticated ? (
+        <Chess username={username} />
+      ) : (
+        <div>
+          <h2>Welcome to Pi Chess</h2>
+          <p>Please wait while we connect to Pi Network...</p>
+        </div>
+      )}
+    </div>
+  );
 };
 
-export default PiWrapper; 
+export default PiWrapper;

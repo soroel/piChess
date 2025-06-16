@@ -6,7 +6,7 @@ import PiWrapper from './PiWrapper';
 
 // Set Pi Network sandbox mode for development
 if (window.Pi) {
-  window.Pi.init = { sandbox: true }; // Set to false for production
+  window.Pi.init({ version: '2.0', sandbox: true }); // Set sandbox to false for production
 }
 
 ReactDOM.render(
