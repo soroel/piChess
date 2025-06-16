@@ -16,6 +16,7 @@ const PiWrapper: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [connectionStatus, setConnectionStatus] = useState('Connecting to Pi Network...');
 
   const onIncompletePayment = (payment: any) => {
     console.log('Incomplete payment found:', payment);
@@ -24,33 +25,54 @@ const PiWrapper: React.FC = () => {
 
   useEffect(() => {
     console.log('Initializing Pi SDK...');
+    setConnectionStatus('Checking for Pi Browser...');
     
-    // Initialize Pi SDK
-    if (window.Pi) {
+    const checkPiBrowser = () => {
+      // Check if we're in the Pi Browser
+      const isPiBrowser = window.navigator.userAgent.includes('PiBrowser');
+      if (!isPiBrowser) {
+        setError('Please use the Pi Browser to access this application.');
+        setIsLoading(false);
+        return false;
+      }
+      return true;
+    };
+
+    const initializePiSdk = () => {
+      setConnectionStatus('Initializing Pi Network SDK...');
+      if (!window.Pi) {
+        setError('Pi Network SDK not loaded. Please refresh the page or try again later.');
+        setIsLoading(false);
+        return false;
+      }
+
       try {
         console.log('Initializing Pi SDK with sandbox mode...');
         window.Pi.init({ version: '2.0', sandbox: true }); // Set sandbox to false for production
         console.log('Pi SDK initialized successfully');
+        return true;
       } catch (err) {
         console.error('Failed to initialize Pi SDK:', err);
         setError('Failed to initialize Pi Network SDK. Please try again.');
-        return;
+        setIsLoading(false);
+        return false;
       }
-    } else {
-      console.error('Pi Network SDK not found. Make sure you have included the Pi SDK script.');
-      setError('Pi Network SDK not loaded. Please make sure you are using the Pi Browser.');
-      return;
-    }
+    };
 
     const authenticate = async () => {
+      if (!checkPiBrowser() || !initializePiSdk()) {
+        return;
+      }
+
       setIsLoading(true);
       setError(null);
+      setConnectionStatus('Connecting to Pi Network...');
       
       try {
         if (!window.Pi) {
-          throw new Error('Pi Network SDK not loaded. Please make sure you are accessing this app through the Pi Browser.');
+          throw new Error('Pi Network SDK is not available');
         }
-
+        
         console.log('Starting Pi authentication...');
         const result = await window.Pi.authenticate(
           ['username', 'payments'], 
@@ -62,6 +84,7 @@ const PiWrapper: React.FC = () => {
         console.log('Authentication successful:', result);
         setUsername(result.user.username);
         setIsAuthenticated(true);
+        setConnectionStatus('Connected');
       } catch (err: any) {
         console.error('Authentication failed:', err);
         let errorMessage = 'Failed to authenticate with Pi Network';
@@ -81,16 +104,46 @@ const PiWrapper: React.FC = () => {
       }
     };
 
-    // Add a small delay to ensure Pi SDK is fully loaded
+    // Start the authentication process
     const timer = setTimeout(() => {
       authenticate();
-    }, 1000);
+    }, 500);
 
     return () => clearTimeout(timer);
   }, []);
 
   if (isLoading) {
-    return <div>Connecting to Pi Network...</div>;
+    return (
+      <div style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        height: '100vh',
+        textAlign: 'center',
+        padding: '20px'
+      }}>
+        <h2>Pi Network Chess</h2>
+        <p>{connectionStatus}</p>
+        {!error && (
+          <div>
+            <div className="spinner" style={{
+              border: '4px solid rgba(0, 0, 0, 0.1)',
+              width: '36px',
+              height: '36px',
+              borderRadius: '50%',
+              borderTopColor: '#14f195',
+              animation: 'spin 1s ease-in-out infinite',
+              margin: '20px auto'
+            }}></div>
+            <style>{
+              `@keyframes spin { to { transform: rotate(360deg); } }`
+            }</style>
+          </div>
+        )}
+        {error && <p style={{ color: 'red', marginTop: '10px' }}>{error}</p>}
+      </div>
+    );
   }
 
   if (error) {
