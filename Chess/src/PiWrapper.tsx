@@ -23,10 +23,26 @@ const PiWrapper: React.FC = () => {
   };
 
   useEffect(() => {
-    // Initialize Pi SDK
-    if (window.Pi) {
-      window.Pi.init({ version: '2.0', sandbox: true }); // Set sandbox to false for production
-    }
+    console.log('Initializing Pi SDK...');
+    
+    const initializePiSdk = () => {
+      if (!window.Pi) {
+        console.error('Pi Network SDK not found. Make sure you have included the Pi SDK script.');
+        setError('Pi Network SDK not loaded. Please make sure you are using the Pi Browser.');
+        return false;
+      }
+
+      try {
+        console.log('Initializing Pi SDK with sandbox mode...');
+        window.Pi.init({ version: '2.0', sandbox: true }); // Set sandbox to false for production
+        console.log('Pi SDK initialized successfully');
+        return true;
+      } catch (err) {
+        console.error('Failed to initialize Pi SDK:', err);
+        setError('Failed to initialize Pi Network SDK. Please try again.');
+        return false;
+      }
+    };
 
     const authenticate = async () => {
       setIsLoading(true);
@@ -37,15 +53,31 @@ const PiWrapper: React.FC = () => {
           throw new Error('Pi Network SDK not loaded. Please make sure you are accessing this app through the Pi Browser.');
         }
 
-        const result = await window.Pi.authenticate(['username', 'payments'], { 
-          onIncompletePaymentFound: onIncompletePayment 
-        });
+        console.log('Starting Pi authentication...');
+        const result = await window.Pi.authenticate(
+          ['username', 'payments'], 
+          { 
+            onIncompletePaymentFound: onIncompletePayment 
+          }
+        );
         
+        console.log('Authentication successful:', result);
         setUsername(result.user.username);
         setIsAuthenticated(true);
       } catch (err: any) {
         console.error('Authentication failed:', err);
-        setError(err.message || 'Failed to authenticate with Pi Network');
+        let errorMessage = 'Failed to authenticate with Pi Network';
+        
+        if (err.message) {
+          errorMessage += `: ${err.message}`;
+        }
+        
+        if (err.response) {
+          console.error('Response data:', err.response.data);
+          console.error('Response status:', err.response.status);
+        }
+        
+        setError(errorMessage);
       } finally {
         setIsLoading(false);
       }
