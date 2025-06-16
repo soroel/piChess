@@ -25,24 +25,22 @@ const PiWrapper: React.FC = () => {
   useEffect(() => {
     console.log('Initializing Pi SDK...');
     
-    const initializePiSdk = () => {
-      if (!window.Pi) {
-        console.error('Pi Network SDK not found. Make sure you have included the Pi SDK script.');
-        setError('Pi Network SDK not loaded. Please make sure you are using the Pi Browser.');
-        return false;
-      }
-
+    // Initialize Pi SDK
+    if (window.Pi) {
       try {
         console.log('Initializing Pi SDK with sandbox mode...');
         window.Pi.init({ version: '2.0', sandbox: true }); // Set sandbox to false for production
         console.log('Pi SDK initialized successfully');
-        return true;
       } catch (err) {
         console.error('Failed to initialize Pi SDK:', err);
         setError('Failed to initialize Pi Network SDK. Please try again.');
-        return false;
+        return;
       }
-    };
+    } else {
+      console.error('Pi Network SDK not found. Make sure you have included the Pi SDK script.');
+      setError('Pi Network SDK not loaded. Please make sure you are using the Pi Browser.');
+      return;
+    }
 
     const authenticate = async () => {
       setIsLoading(true);
