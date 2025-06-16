@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import Chess from './Chess/Chess';
 
@@ -17,15 +18,14 @@ interface PiNetwork {
   }>;
 }
 
-// Add Pi to the window object
-declare global {
-  var Pi: PiNetwork | undefined;
+// Extend the Window interface to include Pi
+interface Window {
+  Pi?: PiNetwork;
 }
 
 const PiWrapper: React.FC = () => {
   const [username, setUsername] = useState<string>('');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
 
   const onIncompletePayment = (payment: any) => {
     console.log('Incomplete payment found:', payment);
@@ -43,7 +43,7 @@ const PiWrapper: React.FC = () => {
       } catch (error) {
         console.error('Authentication error:', error);
       } finally {
-        setIsLoading(false);
+        // Loading complete
       }
     };
 
