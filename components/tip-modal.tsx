@@ -20,7 +20,7 @@ interface TipModalProps {
   onClose: () => void;
 }
 
-const CHESS_COURSES_PRODUCT_ID = "chess-courses-2";
+const CHESS_COURSES_PRODUCT_ID = PRODUCT_CONFIG.PRODUCT_69bc284d03ac4bc03ee7e245;
 
 export function TipModal({ onClose }: TipModalProps) {
   const { sdk, isAuthenticated, products, restoredPurchases } = usePiAuth();

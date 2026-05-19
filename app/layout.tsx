@@ -1,8 +1,10 @@
 import type React from "react";
 import type { Metadata } from "next";
+import Script from "next/script";
 import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
 import { AppWrapper } from "@/components/app-wrapper";
+import { PI_NETWORK_CONFIG } from "@/lib/system-config";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -19,6 +21,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
+        <Script
+          src={PI_NETWORK_CONFIG.SDK_URL}
+          strategy="beforeInteractive"
+        />
         <style
           dangerouslySetInnerHTML={{
             __html: `html {

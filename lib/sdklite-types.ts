@@ -23,6 +23,7 @@ export interface UserPurchaseBalance {
 
 export interface Product {
   id: string;
+  slug?: string;
   name: string;
   description: string;
   price_in_pi: number;
@@ -73,6 +74,11 @@ declare global {
     };
     Pi: {
       init: (config: { version: string; sandbox?: boolean }) => Promise<void>;
+      authenticate: (
+        fields: string[],
+        onPayment?: (payment: unknown) => void,
+        onError?: (error: unknown) => void
+      ) => Promise<unknown>;
     };
   }
 }

@@ -23,7 +23,7 @@ export function TipButton({ onSuccess, onError }: TipButtonProps) {
 
   // Check if this product has been purchased before
   const tipPurchased = restoredPurchases?.find(
-    (p) => p.productId === tipProduct?.slug
+    (p) => p.productId === tipProduct?.id
   );
   const tipCount = tipPurchased?.quantity ?? 0;
 
@@ -46,12 +46,12 @@ export function TipButton({ onSuccess, onError }: TipButtonProps) {
     setError(null);
 
     try {
-      const result = await sdk.makePurchase(tipProduct.slug);
+    const result = await sdk.makePurchase(tipProduct.id);
       console.log("[TipButton] Purchase successful:", result);
 
       // Since Tip is consumable, consume it immediately upon successful purchase
       try {
-        await sdk.state.consume(tipProduct.slug, 1);
+        await sdk.state.consume(tipProduct.id, 1);
         console.log("[TipButton] Tip consumed successfully");
       } catch (consumeErr) {
         console.error("[TipButton] Failed to consume tip:", consumeErr);
