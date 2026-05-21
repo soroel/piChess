@@ -1,6 +1,6 @@
-# SDKLite Payment, Ads & User State — AI Tutorial
+# SDKLite Removed
 
-## Overview
+SDKLite (the App Studio helper) has been fully removed from this project. All runtime references to `sdklite.js` and `window.SDKLite` were deleted. Implement purchases, ads, and user state using the official Pi SDK (`https://sdk.minepi.com/pi-sdk.js`) or your own server APIs.
 
 The SDK instance (`sdk`) is available via `usePiAuth()` after authentication. This document covers how to use it for purchases, ads, and per-user state. All methods below assume the user is already logged in.
 
@@ -24,25 +24,25 @@ Use the App Studio product **slug** as the `productId` argument (e.g. `boost_x2`
 import { usePurchase } from "@/lib/pi-payment";
 
 function BuyButton({ productId }: { productId: string }) {
-  const { makePurchase } = usePurchase();
+const { makePurchase } = usePurchase();
 
-  const handleBuy = async () => {
-    try {
-      const result = await makePurchase(productId);
-      if (result.ok) {
-        deliverReward(result.productId);
-      }
-    } catch (error) {
-      if (error instanceof Error && error.name === "SDKLiteError") {
-        const code = (error as { code?: string }).code;
-        if (code === "product_not_found") showMessage("Item unavailable.");
-        else if (code === "purchase_cancelled") showMessage("Purchase cancelled.");
-        else showMessage("Purchase failed.");
-      }
-    }
-  };
+const handleBuy = async () => {
+try {
+const result = await makePurchase(productId);
+if (result.ok) {
+deliverReward(result.productId);
+}
+} catch (error) {
+if (error instanceof Error && error.name === "SDKLiteError") {
+const code = (error as { code?: string }).code;
+if (code === "product_not_found") showMessage("Item unavailable.");
+else if (code === "purchase_cancelled") showMessage("Purchase cancelled.");
+else showMessage("Purchase failed.");
+}
+}
+};
 
-  return <button onClick={handleBuy}>Buy</button>;
+return <button onClick={handleBuy}>Buy</button>;
 }
 \`\`\`
 
@@ -52,7 +52,7 @@ function BuyButton({ productId }: { productId: string }) {
 const { sdk } = usePiAuth();
 const result = await sdk.makePurchase("boost_x2");
 if (result.ok) {
-  console.log(result.productId, result.paymentId, result.txid);
+console.log(result.productId, result.paymentId, result.txid);
 }
 \`\`\`
 
@@ -75,21 +75,21 @@ Returned on success from `makePurchase()`:
 
 \`\`\`typescript
 try {
-  await sdk.makePurchase("boost_x2");
+await sdk.makePurchase("boost_x2");
 } catch (error) {
-  if (error instanceof Error && error.name === "SDKLiteError") {
-    switch ((error as { code?: string }).code) {
-      case "product_not_found":
-        // product unavailable
-        break;
-      case "purchase_cancelled":
-        // user cancelled — no action needed
-        break;
-      case "purchase_error":
-        // generic failure — prompt retry
-        break;
-    }
-  }
+if (error instanceof Error && error.name === "SDKLiteError") {
+switch ((error as { code?: string }).code) {
+case "product_not_found":
+// product unavailable
+break;
+case "purchase_cancelled":
+// user cancelled — no action needed
+break;
+case "purchase_error":
+// generic failure — prompt retry
+break;
+}
+}
 }
 \`\`\`
 
@@ -104,7 +104,7 @@ Ads are not available in all environments. Always check `isAdNetworkSupported()`
 \`\`\`typescript
 const supported = await sdk.isAdNetworkSupported();
 if (!supported) {
-  // hide ad buttons or skip ad logic
+// hide ad buttons or skip ad logic
 }
 \`\`\`
 
@@ -118,11 +118,11 @@ import { useAds } from "@/lib/pi-payment";
 const { isAdNetworkSupported, showInterstitial } = useAds();
 
 async function showBreakAd() {
-  if (!(await isAdNetworkSupported())) return;
-  const closed = await showInterstitial();
-  if (closed) {
-    // user closed the ad — continue app flow
-  }
+if (!(await isAdNetworkSupported())) return;
+const closed = await showInterstitial();
+if (closed) {
+// user closed the ad — continue app flow
+}
 }
 \`\`\`
 
@@ -138,17 +138,17 @@ import { useAds } from "@/lib/pi-payment";
 const { isAdNetworkSupported, showRewarded } = useAds();
 
 async function watchAdForReward() {
-  if (!(await isAdNetworkSupported())) {
-    showMessage("Ads not available.");
-    return;
-  }
-  const rewarded = await showRewarded("extra_life");
-  if (rewarded) {
-    grantExtraLife();
-    showMessage("Reward granted!");
-  } else {
-    showMessage("Could not verify reward. Try again.");
-  }
+if (!(await isAdNetworkSupported())) {
+showMessage("Ads not available.");
+return;
+}
+const rewarded = await showRewarded("extra_life");
+if (rewarded) {
+grantExtraLife();
+showMessage("Reward granted!");
+} else {
+showMessage("Could not verify reward. Try again.");
+}
 }
 \`\`\`
 
@@ -170,14 +170,15 @@ import { useUserState } from "@/lib/pi-payment";
 const { restore } = useUserState();
 
 async function onAppLoad() {
-  const { purchases } = await restore();
-  for (const p of purchases) {
-    updateInventoryUI(p.productId, p.quantity);
-  }
+const { purchases } = await restore();
+for (const p of purchases) {
+updateInventoryUI(p.productId, p.quantity);
+}
 }
 \`\`\`
 
 Each item in `purchases`:
+
 - `productId` (`string`) — the product slug
 - `quantity` (`number`) — remaining unconsumed count
 
@@ -200,9 +201,9 @@ Deduct from a purchase balance when the user spends a consumable item:
 const { consume } = useUserState();
 
 async function useBoost() {
-  const result = await consume("boost_x2");
-  activateBoost();
-  updateInventoryUI(result.productId, result.quantity);
+const result = await consume("boost_x2");
+activateBoost();
+updateInventoryUI(result.productId, result.quantity);
 }
 \`\`\`
 
@@ -213,6 +214,7 @@ const result = await consume("boost_x2", 3);
 \`\`\`
 
 Returns:
+
 - `productId` (`string`) — the product slug
 - `quantity` (`number`) — remaining balance after consumption
 
@@ -229,9 +231,9 @@ await set("player_profile", { level: 5, xp: 1200 });
 // Load
 const record = await get("player_profile");
 if (record) {
-  console.log(record.blob);      // { level: 5, xp: 1200 }
-  console.log(record.updatedAt); // ISO timestamp
-  console.log(record.version);   // monotonically increasing integer
+console.log(record.blob); // { level: 5, xp: 1200 }
+console.log(record.updatedAt); // ISO timestamp
+console.log(record.version); // monotonically increasing integer
 }
 \`\`\`
 

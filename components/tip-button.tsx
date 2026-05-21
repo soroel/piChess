@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { usePiAuth } from "@/contexts/pi-auth-context";
-import { PRODUCT_CONFIG } from "@/lib/product-config";
+import { usePurchase } from "@/lib/pi-payment";
 
 interface TipButtonProps {
   onSuccess?: () => void;
@@ -10,79 +10,67 @@ interface TipButtonProps {
 }
 
 export function TipButton({ onSuccess, onError }: TipButtonProps) {
-  const { sdk, isAuthenticated, products, restoredPurchases } = usePiAuth();
+  const { isAuthenticated, products } = usePiAuth();
+  const { makePurchase } = usePurchase();
+
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Get the Tip product from products array
-  const tipProduct = products?.find(
-    (p) => p.id === PRODUCT_CONFIG.PRODUCT_69c4e504225cf1a6af321c98
-  ) ?? null;
+  // ✅ FIXED: use correct product system (NO Mongo IDs, NO PRODUCT_CONFIG)
+  const tipProduct = products?.find((p) => p.id === "tip-small") ?? null;
 
-  const amount = tipProduct?.price_in_pi ?? 1.0;
-
-  // Check if this product has been purchased before
-  const tipPurchased = restoredPurchases?.find(
-    (p) => p.productId === tipProduct?.id
-  );
-  const tipCount = tipPurchased?.quantity ?? 0;
+  const amount = tipProduct?.price_in_pi ?? 0.1;
 
   const handleTip = async () => {
-    if (!isAuthenticated || !sdk) {
-      const msg = "Pi Network not connected. Please restart the app.";
+    setError(null);
+
+    // 🔒 auth guard
+    if (!isAuthenticated) {
+      const msg = "Pi not connected. Please open inside Pi Browser and authenticate.";
       setError(msg);
       onError?.(msg);
       return;
     }
 
+    // 🔒 product guard
     if (!tipProduct) {
-      const msg = "Tip product not available.";
+      const msg = "Tip product is not configured correctly.";
       setError(msg);
       onError?.(msg);
       return;
     }
 
     setIsLoading(true);
-    setError(null);
 
     try {
-    const result = await sdk.makePurchase(tipProduct.id);
-      console.log("[TipButton] Purchase successful:", result);
+      const result = await makePurchase(tipProduct.id);
 
-      // Since Tip is consumable, consume it immediately upon successful purchase
-      try {
-        await sdk.state.consume(tipProduct.id, 1);
-        console.log("[TipButton] Tip consumed successfully");
-      } catch (consumeErr) {
-        console.error("[TipButton] Failed to consume tip:", consumeErr);
-        // Don't fail the entire operation if consume fails
-      }
+      console.log("[TipButton] Success:", result);
 
+      setIsLoading(false);
       onSuccess?.();
-      setIsLoading(false);
-    } catch (err: unknown) {
-      const error = err as { code?: string; message?: string };
+    } catch (err: any) {
       setIsLoading(false);
 
-      if (error?.code === "purchase_cancelled") {
-        // User cancelled, don't show error
+      // user cancel (Pi sometimes doesn't always send structured error)
+      if (
+        err?.message?.toLowerCase?.().includes("cancel") ||
+        err?.code === "purchase_cancelled"
+      ) {
         return;
       }
 
-      if (error?.code === "product_not_found") {
-        const msg = "Tip product not found.";
-        setError(msg);
-        onError?.(msg);
-      } else {
-        const msg =
-          error?.message ?? "Failed to process tip. Please try again.";
-        setError(msg);
-        onError?.(msg);
-      }
+      const msg =
+        err?.message || "Failed to process tip. Please try again.";
+
+      console.error("[TipButton] Error:", err);
+
+      setError(msg);
+      onError?.(msg);
     }
   };
 
-  const isDisabled = isLoading || !tipProduct || !isAuthenticated;
+  const isDisabled = isLoading || !isAuthenticated || !tipProduct;
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
@@ -101,23 +89,20 @@ export function TipButton({ onSuccess, onError }: TipButtonProps) {
           cursor: isDisabled ? "not-allowed" : "pointer",
           opacity: isLoading ? 0.7 : 1,
         }}
-        aria-busy={isLoading}
-        title={!tipProduct ? "Tip product unavailable" : undefined}
       >
         {isLoading ? (
           <>
             <span
-              className="inline-block"
               style={{
                 width: 14,
                 height: 14,
                 borderRadius: "50%",
-                border: "2.5px solid rgba(7,9,26,0.3)",
+                border: "2px solid rgba(7,9,26,0.3)",
                 borderTopColor: "#07091a",
                 animation: "spin 0.7s linear infinite",
               }}
             />
-            Processing…
+            Processing...
           </>
         ) : !tipProduct ? (
           "Tip Unavailable"
@@ -131,6 +116,7 @@ export function TipButton({ onSuccess, onError }: TipButtonProps) {
 
       {error && (
         <div
+          role="alert"
           className="rounded-xl px-3 py-2"
           style={{
             background: "rgba(200,60,60,0.10)",
@@ -138,7 +124,6 @@ export function TipButton({ onSuccess, onError }: TipButtonProps) {
             color: "#f08080",
             fontSize: 11,
           }}
-          role="alert"
         >
           {error}
         </div>

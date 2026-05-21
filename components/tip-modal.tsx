@@ -23,7 +23,7 @@ interface TipModalProps {
 const CHESS_COURSES_PRODUCT_ID = PRODUCT_CONFIG.PRODUCT_69bc284d03ac4bc03ee7e245;
 
 export function TipModal({ onClose }: TipModalProps) {
-  const { sdk, isAuthenticated, products, restoredPurchases } = usePiAuth();
+  const { isAuthenticated, products, restoredPurchases } = usePiAuth();
   const { makePurchase } = usePurchase();
   const { consume }      = useUserState();
 
@@ -108,8 +108,8 @@ export function TipModal({ onClose }: TipModalProps) {
     setCourseState("pending");
     setCourseError("");
     try {
-      const result = await sdk.makePurchase(CHESS_COURSES_PRODUCT_ID);
-      setCourseTxid(result.txid);
+      const result = await makePurchase(CHESS_COURSES_PRODUCT_ID);
+      setCourseTxid((result as any)?.txid ?? "");
       setCoursesCount((c) => c + 1);
       setCourseState("success");
     } catch (err: unknown) {
@@ -127,9 +127,9 @@ export function TipModal({ onClose }: TipModalProps) {
   }
 
   async function handleConsumeOne() {
-    if (!sdk || coursesCount <= 0) return;
+    if (coursesCount <= 0) return;
     try {
-      await sdk.state.consume(CHESS_COURSES_PRODUCT_ID, 1);
+      await consume(CHESS_COURSES_PRODUCT_ID, 1);
       setCoursesCount((c) => Math.max(0, c - 1));
     } catch {
       /* silently ignore consume errors */

@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { usePiAuth } from "@/contexts/pi-auth-context";
+import { usePurchase, useUserState } from "@/lib/pi-payment";
 import { PRODUCT_CONFIG } from "@/lib/product-config";
 
 interface TipUsButtonProps {
@@ -10,7 +11,9 @@ interface TipUsButtonProps {
 }
 
 export function TipUsButton({ onSuccess, onError }: TipUsButtonProps) {
-  const { sdk, isAuthenticated, products, restoredPurchases } = usePiAuth();
+  const { isAuthenticated, products, restoredPurchases } = usePiAuth();
+  const { makePurchase } = usePurchase();
+  const { consume } = useUserState();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showSuccess, setShowSuccess] = useState(false);
@@ -29,7 +32,7 @@ export function TipUsButton({ onSuccess, onError }: TipUsButtonProps) {
   const tipUsCount = tipUsPurchased?.quantity ?? 0;
 
   const handleTipUs = async () => {
-    if (!isAuthenticated || !sdk) {
+    if (!isAuthenticated) {
       const msg = "Pi Network not connected. Please restart the app.";
       setError(msg);
       onError?.(msg);
@@ -47,12 +50,12 @@ export function TipUsButton({ onSuccess, onError }: TipUsButtonProps) {
     setError(null);
 
     try {
-      const result = await sdk.makePurchase(tipUsProduct.slug);
+      const result = await makePurchase(tipUsProduct.slug);
       console.log("[TipUsButton] Purchase successful:", result);
 
       // Since Tip Us is consumable, consume it immediately upon successful purchase
       try {
-        await sdk.state.consume(tipUsProduct.slug, 1);
+        await consume(tipUsProduct.slug, 1);
         console.log("[TipUsButton] Tip Us consumed successfully");
       } catch (consumeErr) {
         console.error("[TipUsButton] Failed to consume tip:", consumeErr);
