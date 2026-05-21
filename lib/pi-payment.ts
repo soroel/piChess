@@ -17,6 +17,10 @@ export function usePurchase() {
     }
 
     return new Promise((resolve, reject) => {
+      const timeout = setTimeout(() => {
+        reject(new Error("Payment timeout"));
+      }, 120000);
+
       Pi.createPayment(
         {
           amount: product.amount,
@@ -26,13 +30,17 @@ export function usePurchase() {
         {
           onReadyForServerApproval: async (paymentId: string) => {
             try {
-              await fetch("/api/pi_payment/approve", {
+              const res = await fetch("/api/pi_payment/approve", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ paymentId }),
               });
+
+              if (!res.ok) {
+                throw new Error("Approval failed");
+              }
             } catch (err) {
-              console.error("Approval failed:", err);
+              clearTimeout(timeout);
               reject(err);
             }
           },
@@ -42,26 +50,31 @@ export function usePurchase() {
             txid: string
           ) => {
             try {
-              await fetch("/api/pi_payment/complete", {
+              const res = await fetch("/api/pi_payment/complete", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ paymentId, txid }),
               });
 
+              if (!res.ok) {
+                throw new Error("Completion failed");
+              }
+
+              clearTimeout(timeout);
               resolve({ paymentId, txid });
             } catch (err) {
-              console.error("Completion failed:", err);
+              clearTimeout(timeout);
               reject(err);
             }
           },
 
           onCancel: () => {
-            console.log("Payment cancelled by user");
+            clearTimeout(timeout);
             resolve({ cancelled: true, productId });
           },
 
           onError: (err: any) => {
-            console.error("Pi payment error:", err);
+            clearTimeout(timeout);
             reject(err);
           },
         }
