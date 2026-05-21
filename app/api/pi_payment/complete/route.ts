@@ -7,13 +7,49 @@ export async function POST(req: Request) {
 
     console.log("[Pi] Completing payment:", paymentId, txid);
 
-    // TODO: finalize payment in DB
+    const response = await fetch(
+      `https://api.minepi.com/v2/payments/${paymentId}/complete`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Key ${process.env.PI_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          txid,
+        }),
+      }
+    );
 
-    return NextResponse.json({ success: true });
-  } catch (err) {
+    const data = await response.json();
+
+    console.log("[Pi] Complete response:", data);
+
+    if (!response.ok) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: data,
+        },
+        { status: response.status }
+      );
+    }
+
+    // OPTIONAL:
+    // save completed payment in DB here
+
+    return NextResponse.json({
+      success: true,
+      data,
+    });
+  } catch (err: any) {
     console.error("Complete error:", err);
+
     return NextResponse.json(
-      { success: false, error: "Complete failed" },
+      {
+        success: false,
+        error: err.message,
+      },
       { status: 500 }
     );
   }
